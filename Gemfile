@@ -5,7 +5,7 @@ source "https://rubygems.org"
 gemspec
 
 # Local development dependency on ragdoll-core
-gem "ragdoll-core", path: "../ragdoll-core"
+gem "ragdoll-core", path: "../core"
 
 group :development, :test do
   gem "bundler", "~> 2.0"

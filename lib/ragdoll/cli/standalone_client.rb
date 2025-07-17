@@ -3,90 +3,126 @@
 module Ragdoll
   module CLI
     class StandaloneClient
-      def initialize
-        @client = Ragdoll::Core.client
+      def add_document(path, **options)
+        Ragdoll.add_document(path: path, **options)
       end
 
-      def add_document(location_or_content, **options)
-        @client.add_document(location_or_content, **options)
+
+      def document_status(id)
+        Ragdoll.document_status(id: id)
       end
 
-      def add_file(file_path, **options)
-        @client.add_file(file_path, **options)
-      end
-
-      def add_directory(directory_path, recursive: false, **options)
-        @client.add_directory(directory_path, recursive: recursive, **options)
-      end
-
-      def search(query, **options)
-        @client.search(query, **options)
-      end
-
-      def get_context(query, **options)
-        @client.get_context(query, **options)
-      end
-
-      def enhance_prompt(prompt, **options)
-        @client.enhance_prompt(prompt, **options)
-      end
-
-      def list_documents(**options)
-        @client.list_documents(**options)
-      end
 
       def get_document(id)
-        @client.get_document(id)
+        Ragdoll.get_document(id: id)
       end
+
+
+      def update_document(id, **options)
+        Ragdoll.update_document(id: id, **options)
+      end
+
 
       def delete_document(id)
-        @client.delete_document(id)
+        Ragdoll.delete_document(id: id)
       end
+
+
+      def list_documents(**options)
+        Ragdoll.list_documents(**options)
+      end
+
+
+      def search(query, **options)
+        Ragdoll.search(query: query, **options)
+      end
+
+
+      def get_context(query, **options)
+        Ragdoll.get_context(query: query, **options)
+      end
+
+
+      def enhance_prompt(prompt, **options)
+        Ragdoll.enhance_prompt(prompt: prompt, **options)
+      end
+
+
+      def hybrid_search(query, **options)
+        Ragdoll.hybrid_search(query: query, **options)
+      end
+
 
       def stats
-        @client.stats
+        Ragdoll.stats
       end
 
+
       def healthy?
-        @client.healthy?
+        Ragdoll.healthy?
       end
+
+
+      def configuration
+        Ragdoll.configuration
+      end
+
 
       # CLI-specific helper methods
       def import_from_pattern(pattern, options = {})
         results = []
-        
+
         Dir.glob(pattern).each do |path|
           if File.directory?(path)
             if options[:recursive]
-              subresults = add_directory(path, recursive: true, **options)
-              results.concat(subresults)
+              # Process directory recursively
+              Dir.glob(File.join(path, '**', '*')).each do |subpath|
+                next unless File.file?(subpath)
+
+                results << process_single_file(subpath, options)
+              end
             end
           elsif File.file?(path)
-            # Filter by type if specified
-            if options[:type]
-              ext = File.extname(path).downcase
-              type_extensions = {
-                'pdf' => ['.pdf'],
-                'docx' => ['.docx'],
-                'txt' => ['.txt'],
-                'md' => ['.md', '.markdown'],
-                'html' => ['.html', '.htm']
-              }
-              
-              allowed_extensions = type_extensions[options[:type]] || []
-              next unless allowed_extensions.include?(ext)
-            end
-            
-            begin
-              doc_id = add_file(path, **options)
-              results << { file: path, document_id: doc_id, status: 'success' }
-            rescue => e
-              results << { file: path, error: e.message, status: 'error' }
-            end
+            results << process_single_file(path, options)
           end
         end
-        
-        results
+
+        results.compact
+      end
+
+      private
+
+      def process_single_file(path, options)
+        # Filter by type if specified
+        if options[:type]
+          ext = File.extname(path).downcase
+          type_extensions = {
+            'pdf' => ['.pdf'],
+            'docx' => ['.docx'],
+            'txt' => ['.txt'],
+            'md' => ['.md', '.markdown'],
+            'html' => ['.html', '.htm']
+          }
+
+          allowed_extensions = type_extensions[options[:type]] || []
+          return nil unless allowed_extensions.include?(ext)
+        end
+
+        begin
+          result = add_document(path, **options.except(:type, :recursive))
+          {
+            file: path,
+            document_id: result[:document_id],
+            status: result[:success] ? 'success' : 'error',
+            message: result[:message]
+          }
+        rescue StandardError => e
+          {
+            file: path,
+            error: e.message,
+            status: 'error'
+          }
+        end
       end
     end
   end

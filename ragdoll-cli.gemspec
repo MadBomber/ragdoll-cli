@@ -32,7 +32,6 @@ Gem::Specification.new do |spec|
   spec.require_paths = ["lib"]
 
   # Dependencies
-  spec.add_dependency "ragdoll-core", "~> 1.0"
   spec.add_dependency "thor", "~> 1.3"
 
   # Development dependencies
