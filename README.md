@@ -52,6 +52,9 @@ ragdoll config get embedding_model
 
 # Show config file path
 ragdoll config path
+
+# Show database configuration and status
+ragdoll config database
 ```
 
 ### Document Import
@@ -78,9 +81,6 @@ ragdoll search "machine learning concepts"
 # Limit number of results
 ragdoll search "AI algorithms" --limit 5
 
-# Set similarity threshold
-ragdoll search "neural networks" --threshold 0.8
-
 # Different output formats
 ragdoll search "deep learning" --format json
 ragdoll search "AI" --format plain
@@ -100,8 +100,20 @@ ragdoll list --limit 10
 ragdoll list --format json
 ragdoll list --format plain
 
-# Show statistics
+# Check document status
+ragdoll status <id>
+
+# Update document metadata
+ragdoll update <id> --title "New Title"
+
+# Delete a document
+ragdoll delete <id>
+ragdoll delete <id> --force  # Bypass confirmation
+
+# Show system statistics
 ragdoll stats
+ragdoll stats --format json
+ragdoll stats --format plain
 ```
 
 ### Utilities
@@ -113,6 +125,9 @@ ragdoll version
 # Show help
 ragdoll help
 ragdoll help import  # Help for specific command
+
+# Check system health
+ragdoll health
 ```
 
 ## Configuration
@@ -156,11 +171,10 @@ export RAGDOLL_CONFIG=/path/to/custom/config.yml
 
 ## Storage
 
-By default, documents and embeddings are stored in JSON files in `~/.ragdoll/`:
+Documents and embeddings are stored in a PostgreSQL database managed by the `ragdoll-core` gem for production performance. Configuration and log files are stored locally in `~/.ragdoll/`:
 
-- `~/.ragdoll/documents.json` - Document metadata and content
-- `~/.ragdoll/embeddings.json` - Vector embeddings for search
 - `~/.ragdoll/config.yml` - Configuration settings
+- `~/.ragdoll/ragdoll.log` - Log file (if configured)
 
 ## Supported Document Types
 
@@ -190,9 +204,6 @@ ragdoll search "How to configure SSL certificates?"
 
 # Get detailed results
 ragdoll search "database optimization" --format plain --limit 3
-
-# High-precision search
-ragdoll search "security best practices" --threshold 0.9
 ```
 
 ### Manage your knowledge base
@@ -202,9 +213,14 @@ ragdoll search "security best practices" --threshold 0.9
 ragdoll stats
 ragdoll list --limit 20
 
-# Search with different similarity thresholds
-ragdoll search "kubernetes deployment" --threshold 0.6  # More results
-ragdoll search "kubernetes deployment" --threshold 0.9  # Fewer, more precise results
+# Check status of a specific document
+ragdoll status 123
+
+# Update document title
+ragdoll update 123 --title "Updated Document Title"
+
+# Delete a document
+ragdoll delete 123
 ```
 
 ## Integration with Other Tools
@@ -236,15 +252,6 @@ ls *.md | xargs -I {} ragdoll import {}
    ```
    ragdoll stats  # Check if documents are imported
    ragdoll list   # See what documents exist
-   ```
-
-3. **Low quality search results:**
-   ```
-   # Try lowering the similarity threshold
-   ragdoll search "query" --threshold 0.5
-   
-   # Or check if documents are properly imported
-   ragdoll list --format plain
    ```
 
 ## Contributing
