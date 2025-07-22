@@ -90,6 +90,9 @@ ragdoll search "ML" --format table  # default
 ### Document Management
 
 ```bash
+# Add a single document
+ragdoll add <path>
+
 # List all documents
 ragdoll list
 
@@ -114,6 +117,16 @@ ragdoll delete <id> --force  # Bypass confirmation
 ragdoll stats
 ragdoll stats --format json
 ragdoll stats --format plain
+```
+
+### Retrieval Utilities
+
+```bash
+# Get context for RAG applications
+ragdoll context "<query>" --limit 5
+
+# Enhance a prompt with context
+ragdoll enhance "<prompt>" --context_limit 5
 ```
 
 ### Utilities

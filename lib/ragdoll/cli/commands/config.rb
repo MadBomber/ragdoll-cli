@@ -23,15 +23,16 @@ module Ragdoll
           puts "Configuration file created at: #{loader.config_path}"
         end
 
-        puts "\nDefault configuration created with SQLite database."
+        puts "\nDefault configuration created with PostgreSQL database."
         puts 'You may need to:'
-        puts '1. Set your API keys in environment variables:'
+        puts '1. Ensure PostgreSQL is installed and running'
+        puts '2. Create the database: createdb ragdoll_development'
+        puts '3. Set your API keys in environment variables:'
         puts '   export OPENAI_API_KEY=your_key_here'
-        puts "2. Or add them to the config file under 'api_keys' section"
-        puts '3. For production, consider switching to PostgreSQL:'
-        puts '   ragdoll config set database_config.adapter postgresql'
+        puts "4. Or add them to the config file under 'api_keys' section"
+        puts '5. For production, update the database configuration:'
         puts '   ragdoll config set database_config.database ragdoll_production'
-        puts "4. Edit #{loader.config_path} to customize settings"
+        puts "6. Edit #{loader.config_path} to customize settings"
       end
 
       desc 'show', 'Show current configuration'

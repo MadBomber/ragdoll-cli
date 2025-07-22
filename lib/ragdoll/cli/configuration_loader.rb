@@ -30,8 +30,11 @@ module Ragdoll
           'search_similarity_threshold' => 0.7,
           'max_search_results' => 10,
           'database_config' => {
-            'adapter' => 'sqlite3',
-            'database' => File.expand_path('~/.ragdoll/ragdoll.sqlite3'),
+            'adapter' => 'postgresql',
+            'database' => 'ragdoll_development',
+            'host' => 'localhost',
+            'port' => 5432,
+            'username' => ENV['USER'] || 'postgres',
             'auto_migrate' => true
           },
           'log_level' => 'warn',
@@ -88,8 +91,11 @@ module Ragdoll
 
           # Database configuration - avoid direct setting if method doesn't exist
           db_config = config['database_config'] || {
-            'adapter' => 'sqlite3',
-            'database' => File.expand_path('~/.ragdoll/ragdoll.sqlite3'),
+            'adapter' => 'postgresql',
+            'database' => 'ragdoll_development',
+            'host' => 'localhost',
+            'port' => 5432,
+            'username' => ENV['USER'] || 'postgres',
             'auto_migrate' => true
           }
           # Set database configuration only if the method exists

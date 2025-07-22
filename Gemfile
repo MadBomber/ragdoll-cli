@@ -4,6 +4,9 @@ source "https://rubygems.org"
 
 gemspec
 
+gem 'debug_me'
+gem 'ruby-progressbar'
+
 # Local development dependency on ragdoll-core
 gem "ragdoll-core", path: "../core"
 
