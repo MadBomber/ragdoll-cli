@@ -1,28 +1,21 @@
 # frozen_string_literal: true
 
+require 'simplecov'
+SimpleCov.start
+
+# Suppress bundler/rubygems warnings
+$VERBOSE = nil
+
 require "bundler/gem_tasks"
-require "rspec/core/rake_task"
-require "rubocop/rake_task"
+require "rake/testtask"
 
-RSpec::Core::RakeTask.new(:spec)
-RuboCop::RakeTask.new
-
-task default: [:spec, :rubocop]
-
-desc "Run console with ragdoll-cli loaded"
-task :console do
-  require "irb"
-  require_relative "lib/ragdoll-cli"
-  IRB.start
+Rake::TestTask.new(:test) do |t|
+  t.libs << "test"
+  t.libs << "lib"
+  t.test_files = FileList["test/**/*_test.rb"]
 end
 
-desc "Install gem locally"
-task :install_local do
-  sh "gem build ragdoll-cli.gemspec"
-  sh "gem install ragdoll-cli-*.gem"
-end
+# Load annotate tasks
+Dir.glob("lib/tasks/*.rake").each { |r| load r }
 
-desc "Uninstall gem locally"
-task :uninstall_local do
-  sh "gem uninstall ragdoll-cli"
-end
+task default: :test

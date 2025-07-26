@@ -1,6 +1,6 @@
 # ragdoll/version.rb
-# This file is shared between ragdoll-core, ragdoll-cli and ragdoll-rails
+# frozen_string_literal: true
 
 module Ragdoll
-  VERSION = '0.0.1'
+  VERSION = "0.0.2"
 end
