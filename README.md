@@ -1,3 +1,23 @@
+<div align="center" style="background-color: yellow; color: black; padding: 20px; margin: 20px 0; border: 2px solid black; font-size: 48px; font-weight: bold;">
+  ⚠️ CAUTION ⚠️<br />
+  Software Under Development by a Crazy Man
+</div>
+<br />
+<div align="center">
+  <table>
+    <tr>
+      <td width="50%">
+        <a href="https://research.ibm.com/blog/retrieval-augmented-generation-RAG" target="_blank">
+          <img src="ragdoll-cli.png" alt="Ragdoll CLI Putting the Puzzle Together" width="800">
+        </a>
+      </td>
+      <td width="50%" valign="top">
+        <p>Multi-modal RAG (Retrieval-Augmented Generation) is an architecture that integrates multiple data types (such as text, images, and audio) to enhance AI response generation. It combines retrieval-based methods, which fetch relevant information from a knowledge base, with generative large language models (LLMs) that create coherent and contextually appropriate outputs. This approach allows for more comprehensive and engaging user interactions, such as chatbots that respond with both text and images or educational tools that incorporate visual aids into learning materials. By leveraging various modalities, multi-modal RAG systems improve context understanding and user experience.</p>
+      </td>
+    </tr>
+  </table>
+</div>
+
 # Ragdoll::CLI
 
 Standalone command-line interface for the Ragdoll RAG (Retrieval-Augmented Generation) system. Provides document import, search, and management capabilities through a simple CLI.
