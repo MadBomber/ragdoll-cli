@@ -1,0 +1,5 @@
+This is a sample text document for testing the Ragdoll CLI.
+
+It contains multiple paragraphs to test text chunking functionality.
+
+The document processor should be able to handle this file correctly and generate appropriate embeddings for semantic search.
