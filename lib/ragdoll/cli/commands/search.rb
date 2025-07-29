@@ -19,7 +19,7 @@ module Ragdoll
         search_options[:keywords] = options[:keywords].split(',').map(&:strip) if options[:keywords]
         search_options[:tags] = options[:tags].split(',').map(&:strip) if options[:tags]
 
-        search_response = client.search(query, **search_options)
+        search_response = client.search(query: query, **search_options)
         
         # Extract the actual results array from the response
         results = search_response[:results] || search_response['results'] || []

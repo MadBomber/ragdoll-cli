@@ -15,7 +15,7 @@ module Ragdoll
           return unless yes?('Confirm deletion?')
         end
 
-        result = client.delete_document(id: id)
+        result = client.delete_document(id)
 
         if result[:success]
           puts "Document ID #{id} deleted successfully."
@@ -29,8 +29,9 @@ module Ragdoll
       private
 
       def yes?(question)
-        require 'highline/import'
-        agree("#{question} (y/n) ")
+        print "#{question} (y/n) "
+        response = $stdin.gets.chomp.downcase
+        response == 'y' || response == 'yes'
       end
     end
   end

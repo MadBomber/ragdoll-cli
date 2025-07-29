@@ -18,7 +18,7 @@ module Ragdoll
           return
         end
 
-        result = client.update_document(id: id, **update_options)
+        result = client.update_document(id, update_options)
 
         if result[:success]
           puts "Document ID #{id} updated successfully."

@@ -16,6 +16,12 @@ Rake::TestTask.new(:test) do |t|
 end
 
 # Load annotate tasks
-Dir.glob("lib/tasks/*.rake").each { |r| load r }
+Dir.glob("lib/tasks/*.rake").each do |r| 
+  begin
+    load r
+  rescue LoadError => e
+    puts "Skipping #{r}: #{e.message}" if ENV['DEBUG']
+  end
+end
 
 task default: :test

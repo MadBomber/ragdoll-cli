@@ -6,10 +6,8 @@ require 'fileutils'
 module Ragdoll
   module CLI
     class ConfigurationLoader
-      DEFAULT_CONFIG_PATH = File.expand_path('~/.ragdoll/config.yml')
-
       def initialize
-        @config_path = ENV['RAGDOLL_CONFIG'] || DEFAULT_CONFIG_PATH
+        @config_path = nil
       end
 
 
@@ -41,25 +39,27 @@ module Ragdoll
           'log_file' => File.expand_path('~/.ragdoll/ragdoll.log')
         }
 
-        File.write(@config_path, YAML.dump(default_config))
+        File.write(config_path, YAML.dump(default_config))
         default_config
       end
 
 
       def config_exists?
-        File.exist?(@config_path)
+        File.exist?(config_path)
       end
 
-      attr_reader :config_path
+      def config_path
+        @config_path ||= ENV['RAGDOLL_CONFIG'] || File.expand_path('~/.ragdoll/config.yml')
+      end
 
       private
 
       def load_config_file
         return create_default_config unless config_exists?
 
-        YAML.load_file(@config_path)
+        YAML.load_file(config_path)
       rescue StandardError => e
-        puts "Warning: Could not load config file #{@config_path}: #{e.message}"
+        puts "Warning: Could not load config file #{config_path}: #{e.message}"
         puts 'Using default configuration.'
         create_default_config
       end
@@ -136,7 +136,7 @@ module Ragdoll
 
 
       def ensure_config_directory
-        config_dir = File.dirname(@config_path)
+        config_dir = File.dirname(config_path)
         FileUtils.mkdir_p(config_dir) unless Dir.exist?(config_dir)
       end
     end
