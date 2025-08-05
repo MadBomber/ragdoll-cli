@@ -37,4 +37,20 @@ Gem::Specification.new do |spec|
   spec.bindir        = "bin"
   spec.executables   = ["ragdoll"]
   spec.require_paths = ["lib"]
+
+  # Runtime dependencies from Gemfile
+  spec.add_dependency "ragdoll"
+  spec.add_dependency "ruby-progressbar"
+  spec.add_dependency "thor"
+
+  # Development dependencies
+  spec.add_development_dependency "bundler"
+  spec.add_development_dependency "debug_me"
+  spec.add_development_dependency "minitest"
+  spec.add_development_dependency "rake"
+  spec.add_development_dependency "rubocop"
+  spec.add_development_dependency "rubocop-minitest"
+  spec.add_development_dependency "rubocop-rake"
+  spec.add_development_dependency "simplecov"
+  spec.add_development_dependency "undercover"
 end
