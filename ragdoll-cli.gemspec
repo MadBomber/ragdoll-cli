@@ -39,7 +39,7 @@ Gem::Specification.new do |spec|
   spec.require_paths = ["lib"]
 
   # Runtime dependencies from Gemfile
-  spec.add_dependency "ragdoll"
+  spec.add_dependency "ragdoll", git: "https://github.com/MadBomber/ragdoll.git"
   spec.add_dependency "ruby-progressbar"
   spec.add_dependency "thor"
 
