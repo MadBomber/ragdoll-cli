@@ -1,7 +1,15 @@
 PATH
+  remote: ../ragdoll
+  specs:
+    ragdoll (0.1.8)
+
+PATH
   remote: .
   specs:
-    ragdoll-cli (0.0.2)
+    ragdoll-cli (0.1.8)
+      ragdoll
+      ruby-progressbar
+      thor
 
 GEM
   remote: https://rubygems.org/
@@ -23,7 +31,6 @@ GEM
       racc
     prism (1.4.0)
     racc (1.8.1)
-    ragdoll (0.0.2)
     rainbow (3.1.1)
     rake (13.3.0)
     regexp_parser (2.10.0)
@@ -83,15 +90,13 @@ DEPENDENCIES
   bundler
   debug_me
   minitest
-  ragdoll
+  ragdoll!
   ragdoll-cli!
   rake
   rubocop
   rubocop-minitest
   rubocop-rake
-  ruby-progressbar
   simplecov
-  thor
   undercover
 
 BUNDLED WITH
