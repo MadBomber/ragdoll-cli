@@ -1,6 +1,6 @@
 GIT
   remote: https://github.com/madbomber/ragdoll.git
-  revision: c4a44d56dd126a1f056d44d6d5a91b2aa5fd6a7f
+  revision: 119e84e0f1c6f34fef7a5ad7dc0ee512e2e9f4a9
   specs:
     ragdoll (0.1.9)
       activejob
