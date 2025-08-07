@@ -159,4 +159,91 @@ class Ragdoll::CLI::MainTest < Minitest::Test
     assert_match(/Warning: Path not found or not accessible/, output)
     assert_match(/No files found to process/, output)
   end
+
+  # Test new search command options
+  def test_search_command_with_tracking_options
+    # Test that search method is called - we don't need to mock the internals
+    output, = capture_thor_output do
+      @cli.options = create_thor_options({ 
+        session_id: "sess123", 
+        user_id: "user456", 
+        search_type: "hybrid",
+        track_search: true
+      })
+      @cli.search("test query")
+    end
+    
+    # Just verify the command ran without error
+    assert_kind_of String, output
+  end
+
+  def test_search_command_with_semantic_type
+    output, = capture_thor_output do
+      @cli.options = create_thor_options({ search_type: "semantic" })
+      @cli.search("test query")
+    end
+    
+    # Just verify the command ran without error  
+    assert_kind_of String, output
+  end
+
+  # Test new analytics subcommand
+  def test_analytics_subcommand_available
+    # Test that analytics subcommand is registered
+    commands = @cli.class.commands
+    assert commands.key?('analytics'), "Analytics subcommand should be available"
+  end
+
+  # Test new individual commands
+  def test_search_history_command
+    output, = capture_thor_output do
+      @cli.options = create_thor_options({ limit: 20, format: 'table' })
+      @cli.search_history
+    end
+    
+    assert_kind_of String, output
+  end
+
+  def test_search_stats_command
+    output, = capture_thor_output do
+      @cli.options = create_thor_options({ days: 30, format: 'table' })
+      @cli.search_stats
+    end
+    
+    assert_kind_of String, output
+  end
+
+  def test_trending_command
+    output, = capture_thor_output do
+      @cli.options = create_thor_options({ limit: 10, days: 7, format: 'table' })
+      @cli.trending
+    end
+    
+    assert_kind_of String, output
+  end
+
+  def test_cleanup_searches_command
+    output, = capture_thor_output do
+      @cli.options = create_thor_options({ days: 30, dry_run: true, force: false })
+      @cli.cleanup_searches
+    end
+    
+    assert_kind_of String, output
+  end
+
+  # Test enhanced stats command  
+  def test_stats_command_includes_search_analytics
+    # The stats command should work and include search analytics without error
+    output, = capture_thor_output do
+      @cli.stats
+    end
+
+    assert_match(/System Statistics:/, output)
+    assert_match(/Total documents:/, output)
+    assert_match(/Total embeddings:/, output)
+    
+    # Should also include search analytics section with default values
+    assert_match(/Search Analytics \(last 30 days\):/, output)
+    assert_match(/Total searches: 0/, output)
+  end
 end

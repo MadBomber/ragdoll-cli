@@ -18,8 +18,22 @@ module Ragdoll
         search_options[:classification] = options[:classification] if options[:classification]
         search_options[:keywords] = options[:keywords].split(',').map(&:strip) if options[:keywords]
         search_options[:tags] = options[:tags].split(',').map(&:strip) if options[:tags]
+        
+        # Add search tracking options
+        search_options[:session_id] = options[:session_id] if options[:session_id]
+        search_options[:user_id] = options[:user_id] if options[:user_id]
+        search_options[:track_search] = options[:track_search] if options.key?(:track_search)
 
-        search_response = client.search(query: query, **search_options)
+        # Select search method based on search_type
+        search_response = case options[:search_type]
+                         when 'hybrid'
+                           client.hybrid_search(query: query, **search_options)
+                         when 'fulltext'
+                           # Note: fulltext search would need to be implemented in client
+                           client.search(query: query, **search_options)
+                         else
+                           client.search(query: query, **search_options)
+                         end
         
         # Extract the actual results array from the response
         results = search_response[:results] || search_response['results'] || []

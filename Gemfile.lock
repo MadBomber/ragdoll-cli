@@ -1,8 +1,8 @@
 GIT
   remote: https://github.com/madbomber/ragdoll.git
-  revision: 83529f02f24d5b3905e8b49358c2f1de3cc53407
+  revision: c4a44d56dd126a1f056d44d6d5a91b2aa5fd6a7f
   specs:
-    ragdoll (0.1.8)
+    ragdoll (0.1.9)
       activejob
       activerecord
       docx
@@ -21,7 +21,7 @@ GIT
 PATH
   remote: .
   specs:
-    ragdoll-cli (0.1.8)
+    ragdoll-cli (0.1.9)
       ragdoll
       ruby-progressbar
       thor

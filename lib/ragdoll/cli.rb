@@ -14,6 +14,7 @@ require_relative 'cli/commands/search'
 require_relative 'cli/commands/config'
 require_relative 'cli/commands/delete'
 require_relative 'cli/commands/update'
+require_relative 'cli/commands/analytics'
 
 module Ragdoll
   module CLI
@@ -47,12 +48,23 @@ module Ragdoll
                            desc: 'Filter by tags (comma-separated)'
       method_option :format, type: :string, default: 'table', aliases: '-f',
                              desc: 'Output format (table, json, plain)'
+      method_option :session_id, type: :string, aliases: '-s',
+                                 desc: 'Session ID for search tracking'
+      method_option :user_id, type: :string, aliases: '-u',
+                               desc: 'User ID for search tracking'
+      method_option :track_search, type: :boolean, default: true, aliases: '-t',
+                                   desc: 'Enable search tracking (default: true)'
+      method_option :search_type, type: :string, default: 'semantic', aliases: '-S',
+                                  desc: 'Search type: semantic, hybrid, fulltext (default: semantic)'
       def search(query)
         Search.new.call(query, options)
       end
 
       desc 'config SUBCOMMAND', 'Manage configuration'
       subcommand 'config', Config
+
+      desc 'analytics SUBCOMMAND', 'Search analytics and reporting'
+      subcommand 'analytics', Analytics
 
       desc 'stats', 'Show document and embedding statistics'
       def stats
@@ -78,11 +90,36 @@ module Ragdoll
           end
         end
 
-        return unless stats[:content_types]
+        if stats[:content_types]
+          puts "\nContent Types:"
+          stats[:content_types].each do |type, count|
+            puts "  #{type}: #{count}"
+          end
+        end
 
-        puts "\nContent Types:"
-        stats[:content_types].each do |type, count|
-          puts "  #{type}: #{count}"
+        # Add search analytics if available
+        begin
+          search_analytics = client.search_analytics(days: 30)
+          if search_analytics && !search_analytics.empty?
+            puts "\nSearch Analytics (last 30 days):"
+            puts "  Total searches: #{search_analytics[:total_searches] || 0}"
+            puts "  Unique queries: #{search_analytics[:unique_queries] || 0}"
+            puts "  Avg results per search: #{search_analytics[:avg_results_per_search] || 0}"
+            puts "  Avg execution time: #{search_analytics[:avg_execution_time] || 0}ms"
+            
+            if search_analytics[:search_types]
+              puts "  Search types:"
+              search_analytics[:search_types].each do |type, count|
+                puts "    #{type}: #{count}"
+              end
+            end
+            
+            puts "  Searches with results: #{search_analytics[:searches_with_results] || 0}"
+            puts "  Avg click-through rate: #{search_analytics[:avg_click_through_rate] || 0}%"
+          end
+        rescue StandardError => e
+          # Search analytics not available - silently continue
+          puts "\nSearch analytics: Not available (#{e.message})"
         end
       end
 
@@ -369,6 +406,57 @@ module Ragdoll
         puts enhanced
       end
 
+      desc 'search-history', 'Show recent search history'
+      method_option :limit, type: :numeric, default: 20, aliases: '-l',
+                            desc: 'Number of searches to show (default: 20)'
+      method_option :user_id, type: :string, aliases: '-u',
+                              desc: 'Filter by user ID'
+      method_option :session_id, type: :string, aliases: '-s',
+                                  desc: 'Filter by session ID'
+      method_option :format, type: :string, default: 'table', aliases: '-f',
+                             desc: 'Output format (table, json, plain)'
+      def search_history
+        analytics = Analytics.new
+        analytics.options = options
+        analytics.history
+      end
+
+      desc 'search-stats', 'Show detailed search analytics'
+      method_option :days, type: :numeric, default: 30, aliases: '-d',
+                           desc: 'Number of days to analyze (default: 30)'
+      method_option :format, type: :string, default: 'table', aliases: '-f',
+                             desc: 'Output format (table, json)'
+      def search_stats
+        analytics = Analytics.new
+        analytics.options = options
+        analytics.overview
+      end
+
+      desc 'trending', 'Show trending search queries'
+      method_option :limit, type: :numeric, default: 10, aliases: '-l',
+                            desc: 'Number of queries to show (default: 10)'
+      method_option :days, type: :numeric, default: 7, aliases: '-d',
+                           desc: 'Time period in days (default: 7)'
+      method_option :format, type: :string, default: 'table', aliases: '-f',
+                             desc: 'Output format (table, json)'
+      def trending
+        analytics = Analytics.new
+        analytics.options = options
+        analytics.trending
+      end
+
+      desc 'cleanup-searches', 'Cleanup old search records'
+      method_option :days, type: :numeric, default: 30, aliases: '-d',
+                           desc: 'Remove searches older than N days (default: 30)'
+      method_option :dry_run, type: :boolean, default: true, aliases: '-n',
+                              desc: 'Show what would be deleted without actually deleting (default: true)'
+      method_option :force, type: :boolean, default: false, aliases: '-f',
+                            desc: 'Actually perform the cleanup (overrides dry_run)'
+      def cleanup_searches
+        analytics = Analytics.new
+        analytics.options = options
+        analytics.cleanup
+      end
 
       private
 

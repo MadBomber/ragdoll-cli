@@ -111,6 +111,23 @@ module ThorTestHelpers
     File.write(config_path, YAML.dump(default_config))
     config_path
   end
+
+  # Helper to create test options objects that behave like Thor options
+  def create_thor_options(hash = {})
+    options = OpenStruct.new(hash)
+    
+    # Add the key? method that Thor options have
+    def options.key?(key)
+      instance_variable_get(:@table).key?(key)
+    end
+    
+    # Add the to_h method
+    def options.to_h
+      instance_variable_get(:@table)
+    end
+    
+    options
+  end
 end
 
 

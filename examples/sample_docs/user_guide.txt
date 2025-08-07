@@ -1,0 +1,10 @@
+User Guide
+
+This guide covers how to use the search functionality effectively.
+You can search for documents using natural language queries.
+The system will return the most relevant results based on semantic similarity.
+
+Tips for better search results:
+- Use descriptive keywords
+- Ask complete questions
+- Try different phrasings if needed
