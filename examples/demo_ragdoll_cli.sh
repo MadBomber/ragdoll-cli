@@ -1,25 +1,22 @@
 #!/bin/bash
-# 
+#
 # Ragdoll CLI Demo Script
-# 
+#
 # This script demonstrates all available ragdoll-cli commands and capabilities
 # including document management, search functionality, and analytics features.
-# 
+#
 # Prerequisites:
 # - ragdoll-cli gem installed
 # - Ragdoll system configured and running
 # - Sample documents in ./sample_docs/ directory
-# 
+#
 # Usage: ./demo_ragdoll_cli.sh
 
-set -e  # Exit on any error
+set -e # Exit on any error
 
 echo "🚀 Ragdoll CLI Comprehensive Demo"
 echo "=================================="
 echo ""
-echo -e "${YELLOW}📋 Note: You may see some warnings from the core Ragdoll gem during${NC}"
-echo -e "${YELLOW}   embedding generation (e.g., 'undefined method empty?'). These are${NC}"
-echo -e "${YELLOW}   non-fatal and fallback mechanisms will handle them gracefully.${NC}"
 echo ""
 
 # Colors for output
@@ -50,11 +47,11 @@ run_command() {
 # Create sample documents directory and files
 setup_sample_docs() {
     mkdir -p sample_docs
-    
-    cat > sample_docs/getting_started.md << 'EOF'
+
+    cat >sample_docs/getting_started.md <<'EOF'
 # Getting Started with Ragdoll
 
-Ragdoll is a powerful document search and retrieval system that uses semantic search 
+Ragdoll is a powerful document search and retrieval system that uses semantic search
 to find relevant information across your document collection.
 
 ## Features
@@ -64,7 +61,7 @@ to find relevant information across your document collection.
 - RESTful API and CLI interface
 EOF
 
-    cat > sample_docs/user_guide.txt << 'EOF'
+    cat >sample_docs/user_guide.txt <<'EOF'
 User Guide
 
 This guide covers how to use the search functionality effectively.
@@ -77,7 +74,7 @@ Tips for better search results:
 - Try different phrasings if needed
 EOF
 
-    cat > sample_docs/api_reference.md << 'EOF'
+    cat >sample_docs/api_reference.md <<'EOF'
 # API Reference
 
 ## Search Endpoints
@@ -155,7 +152,7 @@ else
     run_command "Show document status (example)" \
         "echo 'Command: ragdoll status DOCUMENT_ID'
          echo 'Note: Requires actual document ID from system'"
-    
+
     run_command "Show detailed document information (example)" \
         "echo 'Command: ragdoll show DOCUMENT_ID'
          echo 'Note: Shows metadata, content length, embeddings count, etc.'"
@@ -309,7 +306,7 @@ run_command "Batch search with tracking for analytics" \
 run_command "Search workflow simulation" \
     "# Simulate user search session
      ragdoll search 'how to search documents' --session_id workflow-demo --user_id test-user
-     ragdoll search 'API documentation' --session_id workflow-demo --user_id test-user  
+     ragdoll search 'API documentation' --session_id workflow-demo --user_id test-user
      ragdoll search 'configuration guide' --session_id workflow-demo --user_id test-user"
 
 run_command "Export search history for analysis" \
@@ -361,7 +358,7 @@ echo -e "${BLUE}Summary of demonstrated features:${NC}"
 echo "• Document management (add, list, show, update, delete)"
 echo "• Semantic, hybrid, and fulltext search"
 echo "• Search tracking with session and user IDs"
-echo "• Comprehensive analytics and reporting" 
+echo "• Comprehensive analytics and reporting"
 echo "• Context retrieval for RAG applications"
 echo "• Prompt enhancement with relevant context"
 echo "• Configuration management"
