@@ -4,6 +4,7 @@ module Ragdoll
   module CLI
     class StandaloneClient
       include DebugMe
+
       def add_document(path, **options)
         Ragdoll.add_document(path: path, **options)
       end

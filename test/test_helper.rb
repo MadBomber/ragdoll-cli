@@ -9,6 +9,20 @@ end
 
 $LOAD_PATH.unshift File.expand_path('../lib', __dir__)
 require 'ragdoll/cli'
+
+# In CI environment, prevent actual Ragdoll Core configuration
+if ENV['RAGDOLL_SKIP_DATABASE_TESTS'] == 'true' || ENV['CI'] == 'true'
+  module Ragdoll
+    module CLI
+      class ConfigurationLoader
+        # Override configure_ragdoll to be a no-op in test environment
+        def configure_ragdoll(config)
+          # Do nothing - skip database configuration in tests
+        end
+      end
+    end
+  end
+end
 require 'minitest/autorun'
 require 'minitest/pride'
 require 'fileutils'
@@ -17,22 +31,40 @@ require 'yaml'
 require 'stringio'
 require 'ostruct'
 
-# Mock Ragdoll::Core if not available
-unless defined?(Ragdoll::Core)
-  module Ragdoll
-    module Core
-      def self.configure
-        # Mock implementation
-      end
+# Set CI environment for testing
+ENV['CI'] = 'true' if ENV['GITHUB_ACTIONS'] == 'true'
+ENV['RAGDOLL_SKIP_DATABASE_TESTS'] = 'true' if ENV['CI'] == 'true'
+
+# Ensure Ragdoll.version is available for version command tests
+# This handles both cases: when ragdoll gem is available and when it's not
+unless defined?(::Ragdoll) && ::Ragdoll.respond_to?(:version)
+  module ::Ragdoll
+    def self.version
+      ["ragdoll-cli version #{Ragdoll::CLI::VERSION}"]
     end
   end
 end
 
-# Mock Ragdoll.version if not available
-unless Ragdoll.respond_to?(:version)
+# Mock Ragdoll::Core if not available
+unless defined?(Ragdoll::Core)
   module Ragdoll
-    def self.version
-      ["ragdoll-cli version #{Ragdoll::CLI::VERSION}"]
+    module Core
+      def self.configure(&block)
+        # Mock implementation
+        yield(OpenStruct.new) if block_given?
+      end
+    end
+  end
+else
+  # If Ragdoll::Core is defined but doesn't have configure method, add it
+  unless Ragdoll::Core.respond_to?(:configure)
+    module Ragdoll
+      module Core
+        def self.configure(&block)
+          # Mock implementation
+          yield(OpenStruct.new) if block_given?
+        end
+      end
     end
   end
 end
@@ -246,4 +278,12 @@ end
 # Base test class
 class Minitest::Test
   include ThorTestHelpers
+
+  def ci_environment?
+    ENV["CI"] == "true" || ENV["RAGDOLL_SKIP_DATABASE_TESTS"] == "true"
+  end
+
+  def skip_if_database_unavailable(message = "Skipping database test in CI environment")
+    skip(message) if ci_environment?
+  end
 end

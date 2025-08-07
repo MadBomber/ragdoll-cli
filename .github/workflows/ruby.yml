@@ -15,6 +15,9 @@ jobs:
         ruby-version: ["3.2", "3.3", "3.4"]
 
     name: Ruby ${{ matrix.ruby-version }}
+    env:
+      RAGDOLL_SKIP_DATABASE_TESTS: true
+      CI: true
     steps:
       - uses: actions/checkout@v4
       - name: Set up Ruby

@@ -2,7 +2,14 @@
 
 source "https://rubygems.org"
 
-# Local development override
-gem "ragdoll", path: "../ragdoll"
+# Use ragdoll from GitHub repository
+gem "ragdoll", github: "madbomber/ragdoll"
+
+# Local development override (uncomment to use local version)
+# if File.exist?("../core")
+#   gem "ragdoll", path: "../core"
+# elsif File.exist?("../ragdoll")
+#   gem "ragdoll", path: "../ragdoll"
+# end
 
 gemspec
