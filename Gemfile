@@ -2,14 +2,10 @@
 
 source "https://rubygems.org"
 
-# Use ragdoll from GitHub repository
-gem "ragdoll", github: "madbomber/ragdoll"
-
-# Local development override (uncomment to use local version)
-# if File.exist?("../core")
-#   gem "ragdoll", path: "../core"
-# elsif File.exist?("../ragdoll")
-#   gem "ragdoll", path: "../ragdoll"
-# end
+# NOTE: ragdoll dependency is optional - the CLI can work without it in test mode
+# For production use, install separately: gem install ragdoll
+# For local development, uncomment one of these:
+# gem "ragdoll", github: "madbomber/ragdoll"
+# gem "ragdoll", path: "../core"
 
 gemspec

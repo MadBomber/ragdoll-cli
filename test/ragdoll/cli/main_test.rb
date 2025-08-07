@@ -12,7 +12,8 @@ class Ragdoll::CLI::MainTest < Minitest::Test
       @cli.version
     end
     
-    assert_match(/ragdoll-cli/, output)
+    # Should contain either ragdoll-cli (mock) or Ragdoll::CLI (real gem)
+    assert(output.match(/ragdoll-cli/) || output.match(/Ragdoll::CLI/), "Version output should contain ragdoll version info")
     assert_match(/\d+\.\d+\.\d+/, output) # Version pattern
   end
 

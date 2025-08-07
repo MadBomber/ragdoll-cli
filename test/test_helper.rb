@@ -8,6 +8,16 @@ SimpleCov.start do
 end
 
 $LOAD_PATH.unshift File.expand_path('../lib', __dir__)
+
+# Try to require ragdoll gem only if not in CI environment
+unless ENV['RAGDOLL_SKIP_DATABASE_TESTS'] == 'true' || ENV['CI'] == 'true'
+  begin
+    require 'ragdoll'
+  rescue LoadError
+    # Ragdoll gem not available, will use mocks
+  end
+end
+
 require 'ragdoll/cli'
 
 # In CI environment, prevent actual Ragdoll Core configuration
