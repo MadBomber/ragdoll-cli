@@ -1,3 +1,23 @@
+GIT
+  remote: https://github.com/madbomber/ragdoll.git
+  revision: 83529f02f24d5b3905e8b49358c2f1de3cc53407
+  specs:
+    ragdoll (0.1.8)
+      activejob
+      activerecord
+      docx
+      neighbor
+      opensearch-ruby
+      pdf-reader
+      pg
+      pgvector
+      rmagick
+      ruby-progressbar
+      ruby_llm
+      rubyzip
+      searchkick
+      shrine
+
 PATH
   remote: .
   specs:
@@ -123,21 +143,6 @@ GEM
     prism (1.4.0)
     public_suffix (6.0.2)
     racc (1.8.1)
-    ragdoll (0.1.8)
-      activejob
-      activerecord
-      docx
-      neighbor
-      opensearch-ruby
-      pdf-reader
-      pg
-      pgvector
-      rmagick
-      ruby-progressbar
-      ruby_llm
-      rubyzip
-      searchkick
-      shrine
     rainbow (3.1.1)
     rake (13.3.0)
     regexp_parser (2.11.0)
@@ -212,12 +217,14 @@ GEM
     zeitwerk (2.7.3)
 
 PLATFORMS
+  aarch64-linux
   aarch64-linux-gnu
   aarch64-linux-musl
   arm-linux-gnu
   arm-linux-musl
   arm64-darwin
   x86_64-darwin
+  x86_64-linux
   x86_64-linux-gnu
   x86_64-linux-musl
 
@@ -225,6 +232,7 @@ DEPENDENCIES
   bundler
   debug_me
   minitest
+  ragdoll!
   ragdoll-cli!
   rake
   rubocop
@@ -234,4 +242,4 @@ DEPENDENCIES
   undercover
 
 BUNDLED WITH
-   2.6.9
+   2.7.1
