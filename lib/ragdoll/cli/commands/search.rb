@@ -14,6 +14,7 @@ module Ragdoll
 
         search_options = {}
         search_options[:limit] = options[:limit] if options[:limit]
+        search_options[:threshold] = options[:threshold] if options[:threshold]
         search_options[:content_type] = options[:content_type] if options[:content_type]
         search_options[:classification] = options[:classification] if options[:classification]
         search_options[:keywords] = options[:keywords].split(',').map(&:strip) if options[:keywords]
@@ -22,7 +23,7 @@ module Ragdoll
         # Add search tracking options
         search_options[:session_id] = options[:session_id] if options[:session_id]
         search_options[:user_id] = options[:user_id] if options[:user_id]
-        search_options[:track_search] = options[:track_search] if options.key?(:track_search)
+        search_options[:track_search] = options[:track_search] if options.respond_to?(:key?) ? options.key?(:track_search) : options.track_search
 
         # Select search method based on search_type
         search_response = case options[:search_type]
@@ -39,10 +40,53 @@ module Ragdoll
         results = search_response[:results] || search_response['results'] || []
 
         if results.empty?
+          # Get statistics for better feedback
+          statistics = search_response[:statistics] || search_response['statistics']
+          execution_time = search_response[:execution_time_ms] || search_response['execution_time_ms']
           total = search_response[:total_results] || search_response['total_results'] || 0
+          
           puts "No results found for '#{query}'"
-          puts "(Total documents in system: #{total})" if total > 0
-          puts "Try adjusting your search terms or check if documents have been processed."
+          puts
+          
+          if statistics
+            threshold = statistics[:threshold_used] || statistics['threshold_used']
+            highest = statistics[:highest_similarity] || statistics['highest_similarity']
+            lowest = statistics[:lowest_similarity] || statistics['lowest_similarity']
+            average = statistics[:average_similarity] || statistics['average_similarity']
+            above_threshold = statistics[:similarities_above_threshold] || statistics['similarities_above_threshold']
+            total_checked = statistics[:total_embeddings_checked] || statistics['total_embeddings_checked']
+            
+            puts "Search Analysis:"
+            puts "  • Similarity threshold: #{threshold&.round(3) || 'N/A'}"
+            puts "  • Embeddings analyzed: #{total_checked || 0}"
+            if highest && lowest && average
+              puts "  • Similarity range: #{lowest.round(3)} - #{highest.round(3)} (avg: #{average.round(3)})"
+            end
+            puts "  • Results above threshold: #{above_threshold || 0}"
+            puts "  • Search time: #{execution_time || 0}ms"
+            puts
+            
+            # Provide actionable suggestions
+            if highest && threshold
+              if highest < threshold
+                suggested_threshold = (highest * 0.9).round(3)
+                puts "💡 Suggestions:"
+                puts "  • Lower the similarity threshold (highest found: #{highest.round(3)})"
+                puts "  • Try: ragdoll search '#{query}' --threshold=#{suggested_threshold}"
+                if highest < 0.3
+                  puts "  • Your query might not match the document content well"
+                  puts "  • Try different or more specific search terms"
+                end
+              elsif above_threshold > 0
+                puts "💡 Note: Found #{above_threshold} similar content above threshold #{threshold}"
+                puts "  This suggests an issue with result processing."
+              end
+            end
+          else
+            puts "(Total documents in system: #{total})" if total > 0
+            puts "Try adjusting your search terms or check if documents have been processed."
+          end
+          
           return
         end
 

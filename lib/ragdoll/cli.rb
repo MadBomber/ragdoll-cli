@@ -38,6 +38,8 @@ module Ragdoll
       desc 'search QUERY', 'Search for documents matching the query'
       method_option :limit, type: :numeric, default: 10, aliases: '-l',
                             desc: 'Maximum number of results to return'
+      method_option :threshold, type: :numeric,
+                               desc: 'Similarity threshold (0.0-1.0, lower = more results)'
       method_option :content_type, type: :string, aliases: '-c',
                                    desc: 'Filter by content type (text, image, audio)'
       method_option :classification, type: :string, aliases: '-C',
@@ -392,9 +394,12 @@ module Ragdoll
 
       desc 'context QUERY', 'Get context for RAG applications'
       method_option :limit, type: :numeric, default: 5, aliases: '-l', desc: 'Maximum number of context chunks'
+      method_option :threshold, type: :numeric, desc: 'Similarity threshold (0.0-1.0, lower = more results)'
       def context(query)
         client = StandaloneClient.new
-        ctx = client.get_context(query, limit: options[:limit])
+        context_options = { limit: options[:limit] }
+        context_options[:threshold] = options[:threshold] if options[:threshold]
+        ctx = client.get_context(query, **context_options)
         puts JSON.pretty_generate(ctx)
       end
 
