@@ -393,22 +393,41 @@ module Ragdoll
       end
 
       desc 'context QUERY', 'Get context for RAG applications'
-      method_option :limit, type: :numeric, default: 5, aliases: '-l', desc: 'Maximum number of context chunks'
+      method_option :limit, type: :numeric, default: 10, aliases: '-l', desc: 'Maximum number of context chunks'
       method_option :threshold, type: :numeric, desc: 'Similarity threshold (0.0-1.0, lower = more results)'
       def context(query)
         client = StandaloneClient.new
         context_options = { limit: options[:limit] }
         context_options[:threshold] = options[:threshold] if options[:threshold]
         ctx = client.get_context(query, **context_options)
-        puts JSON.pretty_generate(ctx)
+        
+        # Check if no context was found and provide enhanced feedback
+        if ctx[:context_chunks].empty?
+          # Get the underlying search response for statistics
+          search_response = client.search(query, **context_options)
+          display_no_results_feedback(query, search_response, 'context')
+        else
+          puts JSON.pretty_generate(ctx)
+        end
       end
 
       desc 'enhance PROMPT', 'Enhance a prompt with context'
-      method_option :context_limit, type: :numeric, default: 5, aliases: '-l', desc: 'Number of context chunks to include'
+      method_option :limit, type: :numeric, default: 10, aliases: '-l', desc: 'Maximum number of context chunks to include'
+      method_option :threshold, type: :numeric, desc: 'Similarity threshold (0.0-1.0, lower = more results)'
       def enhance(prompt)
         client = StandaloneClient.new
-        enhanced = client.enhance_prompt(prompt, context_limit: options[:context_limit])
-        puts enhanced
+        enhance_options = { context_limit: options[:limit] }
+        enhance_options[:threshold] = options[:threshold] if options[:threshold]
+        enhanced = client.enhance_prompt(prompt, **enhance_options)
+        
+        # Check if no context was found and provide enhanced feedback
+        if enhanced[:context_count] == 0
+          # Get the underlying search response for statistics
+          search_response = client.search(prompt, limit: enhance_options[:context_limit], threshold: enhance_options[:threshold])
+          display_no_results_feedback(prompt, search_response, 'enhance')
+        else
+          puts enhanced[:enhanced_prompt]
+        end
       end
 
       desc 'search-history', 'Show recent search history'
@@ -467,6 +486,58 @@ module Ragdoll
 
       def load_configuration
         ConfigurationLoader.new.load
+      end
+
+      def display_no_results_feedback(query, search_response, command_type)
+        # Extract the actual results array from the response
+        results = search_response[:results] || search_response['results'] || []
+        
+        puts "No results found for '#{query}'"
+        puts
+        
+        # Get statistics for better feedback
+        statistics = search_response[:statistics] || search_response['statistics']
+        execution_time = search_response[:execution_time_ms] || search_response['execution_time_ms']
+        total = search_response[:total_results] || search_response['total_results'] || 0
+        
+        if statistics
+          threshold = statistics[:threshold_used] || statistics['threshold_used']
+          highest = statistics[:highest_similarity] || statistics['highest_similarity']
+          lowest = statistics[:lowest_similarity] || statistics['lowest_similarity']
+          average = statistics[:average_similarity] || statistics['average_similarity']
+          above_threshold = statistics[:similarities_above_threshold] || statistics['similarities_above_threshold']
+          total_checked = statistics[:total_embeddings_checked] || statistics['total_embeddings_checked']
+          
+          puts "Search Analysis:"
+          puts "  • Similarity threshold: #{threshold&.round(3) || 'N/A'}"
+          puts "  • Embeddings analyzed: #{total_checked || 0}"
+          if highest && lowest && average
+            puts "  • Similarity range: #{lowest.round(3)} - #{highest.round(3)} (avg: #{average.round(3)})"
+          end
+          puts "  • Results above threshold: #{above_threshold || 0}"
+          puts "  • Search time: #{execution_time || 0}ms"
+          puts
+          
+          # Provide actionable suggestions
+          if highest && threshold
+            if highest < threshold
+              suggested_threshold = (highest * 0.9).round(3)
+              puts "💡 Suggestions:"
+              puts "  • Lower the similarity threshold (highest found: #{highest.round(3)})"
+              puts "  • Try: ragdoll #{command_type} '#{query}' --threshold=#{suggested_threshold}"
+              if highest < 0.3
+                puts "  • Your query might not match the document content well"
+                puts "  • Try different or more specific search terms"
+              end
+            elsif above_threshold > 0
+              puts "💡 Note: Found #{above_threshold} similar content above threshold #{threshold}"
+              puts "  This suggests an issue with result processing."
+            end
+          end
+        else
+          puts "No similarity statistics available."
+          puts "💡 Try lowering the similarity threshold with --threshold=0.5"
+        end
       end
     end
   end
