@@ -130,6 +130,142 @@ module Ragdoll
         Ragdoll.configuration
       end
 
+      # Keywords-specific search methods
+      def search_by_keywords(keywords, **options)
+        if defined?(Ragdoll::Document) && Ragdoll::Document.respond_to?(:search_by_keywords)
+          Ragdoll::Document.search_by_keywords(keywords, **options).map(&:to_hash)
+        else
+          # Fallback to regular search with keywords filter
+          search(keywords: keywords, **options)
+        end
+      end
+
+      def search_by_keywords_all(keywords, **options)
+        if defined?(Ragdoll::Document) && Ragdoll::Document.respond_to?(:search_by_keywords_all)
+          Ragdoll::Document.search_by_keywords_all(keywords, **options).map(&:to_hash)
+        else
+          # Fallback to regular search with keywords filter
+          search(keywords: keywords, **options)
+        end
+      end
+
+      def keyword_frequencies(limit: 100, min_count: 1)
+        if defined?(Ragdoll::Document) && Ragdoll::Document.respond_to?(:keyword_frequencies)
+          frequencies = Ragdoll::Document.keyword_frequencies
+          # Filter by min_count and limit
+          filtered = frequencies.select { |_keyword, count| count >= min_count }
+          filtered.first(limit).to_h
+        else
+          {}
+        end
+      end
+
+      def add_keywords_to_document(document_id, keywords)
+        begin
+          document = Ragdoll::Document.find(document_id)
+          Array(keywords).each { |keyword| document.add_keyword(keyword) }
+          document.save!
+          {
+            success: true,
+            keywords: document.keywords_array
+          }
+        rescue StandardError => e
+          {
+            success: false,
+            message: e.message
+          }
+        end
+      end
+
+      def remove_keywords_from_document(document_id, keywords)
+        begin
+          document = Ragdoll::Document.find(document_id)
+          Array(keywords).each { |keyword| document.remove_keyword(keyword) }
+          document.save!
+          {
+            success: true,
+            keywords: document.keywords_array
+          }
+        rescue StandardError => e
+          {
+            success: false,
+            message: e.message
+          }
+        end
+      end
+
+      def set_document_keywords(document_id, keywords)
+        begin
+          document = Ragdoll::Document.find(document_id)
+          document.keywords = Array(keywords)
+          document.save!
+          {
+            success: true,
+            keywords: document.keywords_array
+          }
+        rescue StandardError => e
+          {
+            success: false,
+            message: e.message
+          }
+        end
+      end
+
+      def keyword_statistics
+        begin
+          total_keywords = 0
+          documents_with_keywords = 0
+          total_keyword_count = 0
+          keyword_frequencies = {}
+
+          if defined?(Ragdoll::Document)
+            documents_with_keywords = Ragdoll::Document.where.not(keywords: []).count
+            
+            Ragdoll::Document.where.not(keywords: []).find_each do |doc|
+              doc_keywords = doc.keywords_array
+              total_keyword_count += doc_keywords.length
+              
+              doc_keywords.each do |keyword|
+                keyword_frequencies[keyword] = (keyword_frequencies[keyword] || 0) + 1
+              end
+            end
+
+            total_keywords = keyword_frequencies.keys.length
+            avg_keywords_per_document = documents_with_keywords > 0 ? (total_keyword_count.to_f / documents_with_keywords) : 0
+            
+            # Top 10 most common keywords
+            top_keywords = keyword_frequencies.sort_by { |_k, v| -v }.first(10)
+            
+            # Count singleton keywords (used by only 1 document)
+            singleton_keywords = keyword_frequencies.count { |_k, v| v == 1 }
+
+            {
+              total_keywords: total_keywords,
+              documents_with_keywords: documents_with_keywords,
+              avg_keywords_per_document: avg_keywords_per_document,
+              top_keywords: top_keywords,
+              singleton_keywords: singleton_keywords
+            }
+          else
+            {
+              total_keywords: 0,
+              documents_with_keywords: 0,
+              avg_keywords_per_document: 0,
+              top_keywords: [],
+              singleton_keywords: 0
+            }
+          end
+        rescue StandardError => e
+          {
+            total_keywords: 0,
+            documents_with_keywords: 0,
+            avg_keywords_per_document: 0,
+            top_keywords: [],
+            singleton_keywords: 0,
+            error: e.message
+          }
+        end
+      end
 
     end
   end

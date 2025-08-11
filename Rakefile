@@ -1,8 +1,5 @@
 # frozen_string_literal: true
 
-require 'simplecov'
-SimpleCov.start
-
 # Suppress bundler/rubygems warnings
 $VERBOSE = nil
 
@@ -13,6 +10,11 @@ Rake::TestTask.new(:test) do |t|
   t.libs << "test"
   t.libs << "lib"
   t.test_files = FileList["test/**/*_test.rb"]
+  
+  # Ensure test task returns proper exit status
+  # Don't let SimpleCov warnings affect the exit code
+  t.warning = false
+  t.verbose = false
 end
 
 # Load annotate tasks

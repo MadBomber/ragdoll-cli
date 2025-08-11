@@ -9,7 +9,15 @@ module Ragdoll
         client = StandaloneClient.new
 
         puts "Searching for: #{query}"
-        puts "Options: #{options.to_h}" unless options.to_h.empty?
+        
+        # Show keyword search mode if keywords are provided
+        if options[:keywords]
+          keywords_array = options[:keywords].split(',').map(&:strip)
+          keywords_mode = options[:keywords_all] ? "ALL keywords (AND)" : "ANY keywords (OR)"
+          puts "Keywords: #{keywords_array.join(', ')} [#{keywords_mode}]"
+        end
+        
+        puts "Options: #{options.to_h.except(:keywords, :keywords_all)}" unless options.to_h.except(:keywords, :keywords_all).empty?
         puts
 
         search_options = {}
@@ -17,7 +25,11 @@ module Ragdoll
         search_options[:threshold] = options[:threshold] if options[:threshold]
         search_options[:content_type] = options[:content_type] if options[:content_type]
         search_options[:classification] = options[:classification] if options[:classification]
-        search_options[:keywords] = options[:keywords].split(',').map(&:strip) if options[:keywords]
+        if options[:keywords]
+          keywords_array = options[:keywords].split(',').map(&:strip)
+          search_options[:keywords] = keywords_array
+          search_options[:keywords_all] = options[:keywords_all] if options[:keywords_all]
+        end
         search_options[:tags] = options[:tags].split(',').map(&:strip) if options[:tags]
         
         # Add search tracking options
@@ -76,6 +88,8 @@ module Ragdoll
                 if highest < 0.3
                   puts "  • Your query might not match the document content well"
                   puts "  • Try different or more specific search terms"
+                  puts "  • Try keyword-based search: ragdoll keywords search KEYWORD"
+                  puts "  • List available keywords: ragdoll keywords list"
                 end
               elsif above_threshold > 0
                 puts "💡 Note: Found #{above_threshold} similar content above threshold #{threshold}"
@@ -85,6 +99,7 @@ module Ragdoll
           else
             puts "(Total documents in system: #{total})" if total > 0
             puts "Try adjusting your search terms or check if documents have been processed."
+            puts "Alternative: Use keyword-based search: ragdoll keywords search KEYWORD"
           end
           
           return

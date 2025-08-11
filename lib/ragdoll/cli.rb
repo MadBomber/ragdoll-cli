@@ -15,6 +15,7 @@ require_relative 'cli/commands/config'
 require_relative 'cli/commands/delete'
 require_relative 'cli/commands/update'
 require_relative 'cli/commands/analytics'
+require_relative 'cli/commands/keywords'
 
 module Ragdoll
   module CLI
@@ -45,7 +46,9 @@ module Ragdoll
       method_option :classification, type: :string, aliases: '-C',
                                      desc: 'Filter by classification'
       method_option :keywords, type: :string, aliases: '-k',
-                               desc: 'Filter by keywords (comma-separated)'
+                               desc: 'Filter by keywords (comma-separated). Use ragdoll keywords for keyword-only search'
+      method_option :keywords_all, type: :boolean, default: false, aliases: '-K',
+                                   desc: 'Require ALL keywords to match (default: any keyword matches)'
       method_option :tags, type: :string, aliases: '-T',
                            desc: 'Filter by tags (comma-separated)'
       method_option :format, type: :string, default: 'table', aliases: '-f',
@@ -67,6 +70,9 @@ module Ragdoll
 
       desc 'analytics SUBCOMMAND', 'Search analytics and reporting'
       subcommand 'analytics', Analytics
+
+      desc 'keywords SUBCOMMAND', 'Manage and search by document keywords'
+      subcommand 'keywords', Keywords
 
       desc 'stats', 'Show document and embedding statistics'
       def stats
@@ -159,12 +165,22 @@ module Ragdoll
             puts "  Status: #{document[:status]}"
             puts "  Embeddings Count: #{document[:embeddings_count]}"
             puts "  Content Length: #{document[:content_length]} characters"
+            
+            # Show keywords prominently
+            keywords = document[:keywords] || document['keywords'] || []
+            if keywords.any?
+              puts "  Keywords: #{keywords.join(', ')}"
+            else
+              puts "  Keywords: (none)"
+            end
+            
             puts "  Created: #{document[:created_at]}"
             puts "  Updated: #{document[:updated_at]}"
 
-            if document[:metadata]
+            if document[:metadata] && document[:metadata].any?
               puts "\nMetadata:"
               document[:metadata].each do |key, value|
+                next if key == 'keywords' # Already displayed above
                 puts "  #{key}: #{value}"
               end
             end
@@ -193,9 +209,25 @@ module Ragdoll
                             desc: 'Maximum number of documents to list'
       method_option :format, type: :string, default: 'table', aliases: '-f',
                              desc: 'Output format (table, json, plain)'
+      method_option :keywords, type: :string, aliases: '-k',
+                               desc: 'Filter by keywords (comma-separated)'
+      method_option :keywords_all, type: :boolean, default: false, aliases: '-K',
+                                   desc: 'Require ALL keywords to match (default: any keyword matches)'
       def list
         client = StandaloneClient.new
-        documents = client.list_documents(limit: options[:limit])
+        
+        # Handle keyword filtering if provided
+        if options[:keywords]
+          keywords_array = options[:keywords].split(',').map(&:strip)
+          search_method = options[:keywords_all] ? :search_by_keywords_all : :search_by_keywords
+          documents = client.public_send(search_method, keywords_array, limit: options[:limit])
+          
+          puts "Listing documents with keywords: #{keywords_array.join(', ')}"
+          puts "Mode: #{options[:keywords_all] ? 'ALL keywords (AND)' : 'ANY keywords (OR)'}"
+          puts
+        else
+          documents = client.list_documents(limit: options[:limit])
+        end
 
         # Get accurate embeddings count for all documents
         documents.each do |doc|
@@ -215,16 +247,30 @@ module Ragdoll
             puts "#{doc[:id]}: #{doc[:title] || 'Untitled'}"
           end
         else
-          # Table format
-          puts 'ID'.ljust(10) + 'Title'.ljust(40) + 'Status'.ljust(12) + 'Embeddings'
-          puts '-' * 80
-          documents.each do |doc|
-            id = (doc[:id] || doc['id'] || '')[0..9].ljust(10)
-            title = (doc[:title] || doc['title'] || 'Untitled')[0..39].ljust(40)
-            status = (doc[:status] || doc['status'] || 'unknown')[0..11].ljust(12)
-            embeddings = (doc[:embeddings_count] || doc['embeddings_count'] || 0).to_s
+          # Table format - show keywords if keyword filtering is being used
+          if options[:keywords]
+            puts 'ID'.ljust(10) + 'Title'.ljust(30) + 'Keywords'.ljust(35) + 'Status'.ljust(10) + 'Emb'
+            puts '-' * 90
+            documents.each do |doc|
+              id = (doc[:id] || doc['id'] || '')[0..9].ljust(10)
+              title = (doc[:title] || doc['title'] || 'Untitled')[0..29].ljust(30)
+              keywords = (doc[:keywords] || doc['keywords'] || []).join(', ')[0..34].ljust(35)
+              status = (doc[:status] || doc['status'] || 'unknown')[0..9].ljust(10)
+              embeddings = (doc[:embeddings_count] || doc['embeddings_count'] || 0).to_s
 
-            puts "#{id}#{title}#{status}#{embeddings}"
+              puts "#{id}#{title}#{keywords}#{status}#{embeddings}"
+            end
+          else
+            puts 'ID'.ljust(10) + 'Title'.ljust(40) + 'Status'.ljust(12) + 'Embeddings'
+            puts '-' * 80
+            documents.each do |doc|
+              id = (doc[:id] || doc['id'] || '')[0..9].ljust(10)
+              title = (doc[:title] || doc['title'] || 'Untitled')[0..39].ljust(40)
+              status = (doc[:status] || doc['status'] || 'unknown')[0..11].ljust(12)
+              embeddings = (doc[:embeddings_count] || doc['embeddings_count'] || 0).to_s
+
+              puts "#{id}#{title}#{status}#{embeddings}"
+            end
           end
         end
       end
@@ -489,16 +535,12 @@ module Ragdoll
       end
 
       def display_no_results_feedback(query, search_response, command_type)
-        # Extract the actual results array from the response
-        results = search_response[:results] || search_response['results'] || []
-        
         puts "No results found for '#{query}'"
         puts
         
         # Get statistics for better feedback
         statistics = search_response[:statistics] || search_response['statistics']
         execution_time = search_response[:execution_time_ms] || search_response['execution_time_ms']
-        total = search_response[:total_results] || search_response['total_results'] || 0
         
         if statistics
           threshold = statistics[:threshold_used] || statistics['threshold_used']
@@ -528,6 +570,8 @@ module Ragdoll
               if highest < 0.3
                 puts "  • Your query might not match the document content well"
                 puts "  • Try different or more specific search terms"
+                puts "  • Try keyword-based search: ragdoll keywords search KEYWORD"
+                puts "  • List available keywords: ragdoll keywords list"
               end
             elsif above_threshold > 0
               puts "💡 Note: Found #{above_threshold} similar content above threshold #{threshold}"
