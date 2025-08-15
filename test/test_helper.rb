@@ -7,29 +7,33 @@ ENV['SIMPLECOV_NO_AUTOLOAD'] = '1'
 unless ENV['DISABLE_SIMPLECOV']
   require 'simplecov'
   
-  # Configure SimpleCov with minimal intervention
+  # Configure SimpleCov to never affect exit status
   SimpleCov.start do
     add_filter '/test/'
     add_filter '/config/'
     enable_coverage :branch
     track_files 'lib/**/*.rb'
     
-    # Disable SimpleCov's exit behavior completely
-    at_exit {}
+    # Completely disable SimpleCov's exit behavior
+    at_exit { }
   end
   
-  # Manual coverage report generation that won't affect exit status
+  # Generate coverage report without affecting exit status
   at_exit do
     if defined?(SimpleCov) && SimpleCov.running
       begin
         result = SimpleCov.result
         if result
-          puts "Coverage: #{result.covered_percent.round(2)}% -- #{result.covered_lines}/#{result.total_lines} lines covered"
+          puts "Coverage report generated for Unit Tests to #{SimpleCov.coverage_dir}."
+          puts "Line Coverage: #{result.covered_percent.round(2)}% (#{result.covered_lines} / #{result.total_lines})"
+          if result.respond_to?(:branch_coverage_percent)
+            puts "Branch Coverage: #{result.branch_coverage_percent.round(2)}% (#{result.covered_branches} / #{result.total_branches})"
+          end
           result.format!
         end
       rescue => e
-        # Don't let SimpleCov issues affect test exit status
-        puts "Coverage report generation failed (non-fatal): #{e.message}" if ENV['DEBUG']
+        # Coverage report failure is non-fatal
+        puts "Coverage report failed: #{e.message}" if ENV['DEBUG']
       end
     end
   end

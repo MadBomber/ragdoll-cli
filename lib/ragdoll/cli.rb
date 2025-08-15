@@ -61,6 +61,10 @@ module Ragdoll
                                    desc: 'Enable search tracking (default: true)'
       method_option :search_type, type: :string, default: 'semantic', aliases: '-S',
                                   desc: 'Search type: semantic, hybrid, fulltext (default: semantic)'
+      method_option :semantic_weight, type: :numeric, aliases: '-w',
+                                      desc: 'Weight for semantic search in hybrid mode (0.0-1.0, default: 0.7)'
+      method_option :text_weight, type: :numeric, aliases: '-W',
+                                 desc: 'Weight for text search in hybrid mode (0.0-1.0, default: 0.3)'
       def search(query)
         Search.new.call(query, options)
       end

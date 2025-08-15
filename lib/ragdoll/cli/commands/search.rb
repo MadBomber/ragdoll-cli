@@ -9,6 +9,14 @@ module Ragdoll
         client = StandaloneClient.new
 
         puts "Searching for: #{query}"
+        puts "Search type: #{options[:search_type] || 'semantic'}"
+        
+        # Show hybrid search weights if applicable
+        if options[:search_type] == 'hybrid'
+          semantic_w = options[:semantic_weight] || 0.7
+          text_w = options[:text_weight] || 0.3
+          puts "Weights: semantic=#{semantic_w}, text=#{text_w}"
+        end
         
         # Show keyword search mode if keywords are provided
         if options[:keywords]
@@ -17,7 +25,9 @@ module Ragdoll
           puts "Keywords: #{keywords_array.join(', ')} [#{keywords_mode}]"
         end
         
-        puts "Options: #{options.to_h.except(:keywords, :keywords_all)}" unless options.to_h.except(:keywords, :keywords_all).empty?
+        # Show other options, excluding display-related ones
+        relevant_options = options.to_h.except(:keywords, :keywords_all, :search_type, :semantic_weight, :text_weight, :format)
+        puts "Options: #{relevant_options}" unless relevant_options.empty?
         puts
 
         search_options = {}
@@ -40,11 +50,14 @@ module Ragdoll
         # Select search method based on search_type
         search_response = case options[:search_type]
                          when 'hybrid'
-                           client.hybrid_search(query: query, **search_options)
+                           # Add weight parameters if provided
+                           search_options[:semantic_weight] = options[:semantic_weight] if options[:semantic_weight]
+                           search_options[:text_weight] = options[:text_weight] if options[:text_weight]
+                           client.hybrid_search(query, **search_options)
                          when 'fulltext'
-                           # Note: fulltext search would need to be implemented in client
-                           client.search(query: query, **search_options)
+                           client.fulltext_search(query, **search_options)
                          else
+                           # Default to semantic search
                            client.search(query: query, **search_options)
                          end
         
@@ -114,28 +127,65 @@ module Ragdoll
             content = safe_string_value(result, [:content, :text], '')
             puts "#{index + 1}. #{title}"
             puts "   ID: #{result[:document_id] || result[:id]}"
-            puts "   Similarity: #{result[:similarity]&.round(3) || 'N/A'}"
+            
+            # Show appropriate score based on search type
+            if options[:search_type] == 'hybrid'
+              puts "   Combined Score: #{result[:combined_score]&.round(3) || 'N/A'}"
+              if result[:search_types]
+                puts "   Match Types: #{result[:search_types].join(', ')}"
+              end
+            elsif options[:search_type] == 'fulltext'
+              puts "   Text Match: #{result[:fulltext_similarity]&.round(3) || 'N/A'}"
+            else
+              puts "   Similarity: #{result[:similarity]&.round(3) || 'N/A'}"
+            end
+            
             puts "   Content: #{content[0..200]}..."
             puts
           end
         else
           # Table format (default)
-          puts "Found #{results.length} results:"
+          puts "Found #{results.length} results (#{search_response[:search_type] || 'semantic'} search):"
           puts
-          puts 'Rank'.ljust(5) + 'Title'.ljust(30) + 'Similarity'.ljust(12) + 'Content Preview'
+          
+          # Adjust column header based on search type
+          score_header = case options[:search_type]
+                        when 'hybrid'
+                          'Score'.ljust(12)
+                        when 'fulltext'
+                          'Text Match'.ljust(12)
+                        else
+                          'Similarity'.ljust(12)
+                        end
+          
+          puts 'Rank'.ljust(5) + 'Title'.ljust(30) + score_header + 'Content Preview'
           puts '-' * 80
 
           results.each_with_index do |result, index|
             rank = (index + 1).to_s.ljust(5)
             title = safe_string_value(result, [:title, :document_title], 'Untitled')[0..29].ljust(30)
-            similarity = (result[:similarity]&.round(3) || 'N/A').to_s.ljust(12)
+            
+            # Get appropriate score based on search type
+            score = case options[:search_type]
+                   when 'hybrid'
+                     result[:combined_score] || result[:weighted_score]
+                   when 'fulltext'
+                     result[:fulltext_similarity]
+                   else
+                     result[:similarity]
+                   end
+            
+            score_str = (score&.round(3) || 'N/A').to_s.ljust(12)
             content = safe_string_value(result, [:content, :text], '')[0..50]
             content += '...' if content.length == 50
 
-            puts "#{rank}#{title}#{similarity}#{content}"
+            puts "#{rank}#{title}#{score_str}#{content}"
           end
 
           puts
+          if options[:search_type] == 'hybrid' && (options[:semantic_weight] || options[:text_weight])
+            puts "Weights: semantic=#{options[:semantic_weight] || 0.7}, text=#{options[:text_weight] || 0.3}"
+          end
           puts 'Use --format=json for complete results or --format=plain for detailed view'
         end
       end

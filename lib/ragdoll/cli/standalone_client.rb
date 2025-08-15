@@ -106,19 +106,47 @@ module Ragdoll
         end
       end
 
-      def hybrid_search(query = nil, **options)
-        # TODO: This will delegate to Ragdoll core when hybrid search is implemented
-        if defined?(Ragdoll) && Ragdoll.respond_to?(:hybrid_search)
-          if query
-            Ragdoll.hybrid_search(query: query, **options)
-          else
-            Ragdoll.hybrid_search(**options)
-          end
-        else
-          # Fallback to regular search for now
-          result = search(query, **options)
-          result.is_a?(Hash) ? result.merge(search_type: 'hybrid') : { search_type: 'hybrid', results: [] }
+      def hybrid_search(query, **options)
+        # Properly delegate to Ragdoll core's hybrid_search
+        Ragdoll.hybrid_search(query: query, **options)
+      end
+      
+      def fulltext_search(query, **options)
+        # Perform full-text search using Document.search_content
+        limit = options[:limit] || 20
+        threshold = options[:threshold] || 0.0
+        
+        # Get full-text search results
+        documents = Ragdoll::Document.search_content(query, **options)
+        
+        # Format results to match expected structure
+        results = documents.map do |doc|
+          {
+            document_id: doc.id.to_s,
+            document_title: doc.title,
+            document_location: doc.location,
+            content: doc.content[0..500], # Preview
+            fulltext_similarity: doc.respond_to?(:fulltext_similarity) ? doc.fulltext_similarity : nil,
+            document_type: doc.document_type,
+            status: doc.status
+          }
         end
+        
+        {
+          query: query,
+          search_type: 'fulltext',
+          results: results,
+          total_results: results.length,
+          threshold_used: threshold
+        }
+      rescue StandardError => e
+        {
+          query: query,
+          search_type: 'fulltext',
+          results: [],
+          total_results: 0,
+          error: "Full-text search failed: #{e.message}"
+        }
       end
 
       def healthy?

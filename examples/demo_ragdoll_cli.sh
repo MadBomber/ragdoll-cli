@@ -193,6 +193,9 @@ run_command "Search with session and user tracking" \
 run_command "Hybrid search (semantic + fulltext)" \
     "ragdoll search 'API reference' --search_type hybrid"
 
+run_command "Hybrid search with custom weights" \
+    "ragdoll search 'documentation guide' --search_type hybrid --semantic_weight 0.6 --text_weight 0.4"
+
 run_command "Fulltext search only" \
     "ragdoll search 'parameters' --search_type fulltext"
 
@@ -356,7 +359,7 @@ echo -e "${GREEN}✅ Ragdoll CLI Demo completed successfully!${NC}"
 echo ""
 echo -e "${BLUE}Summary of demonstrated features:${NC}"
 echo "• Document management (add, list, show, update, delete)"
-echo "• Semantic, hybrid, and fulltext search"
+echo "• Semantic, hybrid, and fulltext search with configurable weights"
 echo "• Search tracking with session and user IDs"
 echo "• Comprehensive analytics and reporting"
 echo "• Context retrieval for RAG applications"

@@ -11,7 +11,7 @@ Gem::Specification.new do |spec|
   spec.email       = ["dvanhoozer@gmail.com"]
 
   spec.summary     = "Multi-Modal Retrieval Augmented Generation for the CLI"
-  spec.description = "Under development.  Contributors welcome."
+  spec.description = "Command-line interface for Ragdoll RAG system with semantic, full-text, and hybrid search capabilities. Under development. Contributors welcome."
   spec.homepage    = "https://github.com/MadBomber/ragdoll-cli"
   spec.license     = "MIT"
   spec.required_ruby_version = ">= 3.2.0"
@@ -39,7 +39,7 @@ Gem::Specification.new do |spec|
   spec.require_paths = ["lib"]
 
   # Runtime dependencies from Gemfile
-  spec.add_dependency "ragdoll"
+  spec.add_dependency "ragdoll", ">= 0.1.10"
   spec.add_dependency "ruby-progressbar"
   spec.add_dependency "thor"
 

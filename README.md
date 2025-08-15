@@ -95,16 +95,45 @@ ragdoll import "files/*" --type pdf
 ### Search
 
 ```bash
-# Basic search
+# Basic semantic search (default)
 ragdoll search "machine learning concepts"
+
+# Full-text search for exact keywords
+ragdoll search "neural networks" --search-type fulltext
+
+# Hybrid search combining semantic and full-text
+ragdoll search "AI algorithms" --search-type hybrid
+
+# Customize hybrid search weights
+ragdoll search "deep learning" --search-type hybrid --semantic-weight 0.6 --text-weight 0.4
 
 # Limit number of results
 ragdoll search "AI algorithms" --limit 5
+
+# Set similarity threshold
+ragdoll search "machine learning" --threshold 0.8
 
 # Different output formats
 ragdoll search "deep learning" --format json
 ragdoll search "AI" --format plain
 ragdoll search "ML" --format table  # default
+```
+
+#### Search Types
+
+- **Semantic Search** (default): Uses AI embeddings to find conceptually similar content
+- **Full-text Search**: Uses PostgreSQL text search for exact keyword matching
+- **Hybrid Search**: Combines both semantic and full-text search with configurable weights
+
+```bash
+# Semantic search - best for concepts and meaning
+ragdoll search "How do neural networks learn?" --search-type semantic
+
+# Full-text search - best for exact terms
+ragdoll search "backpropagation algorithm" --search-type fulltext
+
+# Hybrid search - best comprehensive results
+ragdoll search "transformer architecture" --search-type hybrid --semantic-weight 0.7 --text-weight 0.3
 ```
 
 ### Document Management
@@ -232,11 +261,20 @@ ragdoll import "knowledge-base/*" --recursive
 ### Search and get enhanced prompts
 
 ```bash
-# Basic search
+# Semantic search for concepts
 ragdoll search "How to configure SSL certificates?"
 
-# Get detailed results
-ragdoll search "database optimization" --format plain --limit 3
+# Full-text search for specific terms
+ragdoll search "SSL certificate configuration" --search-type fulltext
+
+# Hybrid search for comprehensive results
+ragdoll search "database optimization techniques" --search-type hybrid
+
+# Get detailed results with custom formatting
+ragdoll search "performance tuning" --format plain --limit 3
+
+# Search with custom similarity threshold
+ragdoll search "security best practices" --threshold 0.75 --search-type semantic
 ```
 
 ### Manage your knowledge base
