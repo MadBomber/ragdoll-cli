@@ -2,6 +2,6 @@
 
 source "https://rubygems.org"
 
-gem "ragdoll", github: "madbomber/ragdoll"
+gem "ragdoll", github: "madbomber/ragdoll", branch: "develop"
 
 gemspec
