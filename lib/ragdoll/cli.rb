@@ -285,17 +285,22 @@ module Ragdoll
                                 desc: 'Recursively process subdirectories (default: true)'
       method_option :type, type: :string, aliases: '-t',
                            desc: 'Filter by document type (pdf, docx, txt, md, html)'
-      method_option :force, type: :boolean, default: false, aliases: '-f',
+      method_option :skip_confirmation, type: :boolean, default: false, aliases: '-y',
                             desc: 'Skip confirmation prompts'
+      method_option :force_duplicate, type: :boolean, default: false, aliases: '-f',
+                            desc: 'Force addition of duplicate documents (bypasses duplicate detection)'
       def add(*paths)
         if paths.empty?
           puts 'Error: No paths provided'
-          puts 'Usage: ragdoll add PATH [PATH2] [PATH3]...'
+          puts 'Usage: ragdoll add PATH [PATH2] [PATH3]... [OPTIONS]'
           puts 'Examples:'
           puts '  ragdoll add file.pdf'
           puts '  ragdoll add ../docs'
           puts '  ragdoll add ../docs/**/*.md'
           puts '  ragdoll add file1.txt file2.pdf ../docs'
+          puts '  ragdoll add file.pdf --force-duplicate    # Force add even if duplicate'
+          puts '  ragdoll add ../docs --type=pdf            # Only process PDF files'
+          puts '  ragdoll add ../docs --skip-confirmation   # Skip prompts'
           exit 1
         end
 
@@ -338,12 +343,16 @@ module Ragdoll
 
         progressbar.finish
 
-        # Summary
+        # Summary with duplicate detection information
         success_count = all_results.count { |r| r && r[:status] == 'success' }
         error_count = all_results.count { |r| r && r[:status] == 'error' }
+        duplicate_count = all_results.count { |r| r && r[:status] == 'success' && r[:duplicate] }
+        new_count = success_count - duplicate_count
 
         puts "\nCompleted:"
-        puts "  Successfully added: #{success_count} files"
+        puts "  Successfully processed: #{success_count} files"
+        puts "    New documents: #{new_count}"
+        puts "    Duplicates #{options[:force_duplicate] ? 'forced' : 'detected'}: #{duplicate_count}" if duplicate_count > 0
         puts "  Errors: #{error_count} files"
 
         if error_count > 0
@@ -355,10 +364,33 @@ module Ragdoll
 
         return unless success_count > 0
 
-        puts "\nSuccessfully added files:"
-        all_results.select { |r| r && r[:status] == 'success' }.each do |result|
-          puts "  #{result[:file]} (ID: #{result[:document_id]})"
-          puts "    #{result[:message]}" if result[:message]
+        # Show new documents
+        new_documents = all_results.select { |r| r && r[:status] == 'success' && !r[:duplicate] }
+        if new_documents.any?
+          puts "\nNew documents added:"
+          new_documents.each do |result|
+            puts "  #{result[:file]} (ID: #{result[:document_id]})"
+            puts "    #{result[:message]}" if result[:message]
+          end
+        end
+
+        # Show duplicate information
+        duplicate_documents = all_results.select { |r| r && r[:status] == 'success' && r[:duplicate] }
+        if duplicate_documents.any?
+          if options[:force_duplicate]
+            puts "\nDuplicates forced to be added:"
+            duplicate_documents.each do |result|
+              puts "  #{result[:file]} (ID: #{result[:document_id]})"
+              puts "    #{result[:message]}" if result[:message]
+            end
+          else
+            puts "\nDuplicates detected (skipped):"
+            duplicate_documents.each do |result|
+              puts "  #{result[:file]} (existing ID: #{result[:document_id]})"
+              puts "    #{result[:message]}" if result[:message]
+            end
+            puts "\nTip: Use --force-duplicate (-f) to force adding duplicates"
+          end
         end
 
         puts "\nNote: Documents are being processed in the background."
@@ -412,12 +444,19 @@ module Ragdoll
 
       def process_single_file(client, path, options)
         begin
-          result = client.add_document(path)
+          # Pass force_duplicate parameter for duplicate detection
+          result = client.add_document(path, force_duplicate: options[:force_duplicate])
+          
+          # Determine if this was a duplicate detection
+          duplicate_detected = result[:duplicate] || (result[:message] && result[:message].include?('already exists'))
+          
           {
             file: path,
             document_id: result[:document_id],
             status: result[:success] ? 'success' : 'error',
-            message: result[:message]
+            message: result[:message],
+            duplicate: duplicate_detected,
+            forced: options[:force_duplicate]
           }
         rescue StandardError => e
           {

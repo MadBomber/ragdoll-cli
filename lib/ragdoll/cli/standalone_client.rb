@@ -6,7 +6,13 @@ module Ragdoll
       include DebugMe
 
       def add_document(path, **options)
-        Ragdoll.add_document(path: path, **options)
+        # Map force_duplicate option to force parameter for core library
+        core_options = options.dup
+        if core_options.key?(:force_duplicate)
+          core_options[:force] = core_options.delete(:force_duplicate)
+        end
+        
+        Ragdoll.add_document(path: path, **core_options)
       end
 
 
