@@ -42,9 +42,9 @@ This will install the `ragdoll` command-line tool.
    export OPENAI_API_KEY=your_api_key_here
    ```
 
-3. **Import documents:**
+3. **Add documents:**
    ```bash
-   ragdoll import "docs/*.pdf" --recursive
+   ragdoll add docs/*.pdf --recursive
    ```
 
 4. **Search for content:**
@@ -77,20 +77,56 @@ ragdoll config path
 ragdoll config database
 ```
 
-### Document Import
+### Document Management
 
 ```bash
-# Import files matching a pattern
-ragdoll import "documents/*.pdf"
+# Add a single document
+ragdoll add document.pdf
 
-# Import recursively from directory
-ragdoll import "docs/**/*" --recursive
+# Add multiple documents and directories
+ragdoll add file1.pdf file2.txt ../docs
+
+# Add files matching a pattern
+ragdoll add "documents/*.pdf"
+
+# Add recursively from directory (default: true)
+ragdoll add "docs/" --recursive
 
 # Filter by document type
-ragdoll import "files/*" --type pdf
+ragdoll add "files/*" --type pdf
+
+# Available types: pdf, docx, txt, md, html
+
+# Skip confirmation prompts
+ragdoll add docs/ --skip-confirmation
+
+# Force addition of duplicate documents
+ragdoll add document.pdf --force-duplicate
 
 # Available types: pdf, docx, txt, md, html
 ```
+
+#### Duplicate Detection
+
+Ragdoll automatically detects and prevents duplicate documents from being processed:
+
+```bash
+# Normal behavior - duplicates are detected and skipped
+ragdoll add document.pdf
+ragdoll add document.pdf  # Skipped (duplicate detected)
+
+# Force addition of duplicates when needed
+ragdoll add document.pdf --force-duplicate  # Creates new document despite duplicate
+
+# Batch processing safely handles mixed new/duplicate files
+ragdoll add docs/*.pdf  # Only processes new files, skips duplicates
+```
+
+**Duplicate Detection Features:**
+- **File-based detection**: Compares file location, modification time, and SHA256 hash
+- **Content-based detection**: Compares extracted text content and metadata
+- **Smart similarity**: Detects duplicates even with minor differences (5% tolerance)
+- **Performance optimized**: Uses database indexes for fast duplicate lookups
 
 ### Search
 
@@ -136,12 +172,9 @@ ragdoll search "backpropagation algorithm" --search-type fulltext
 ragdoll search "transformer architecture" --search-type hybrid --semantic-weight 0.7 --text-weight 0.3
 ```
 
-### Document Management
+### Document Operations
 
 ```bash
-# Add a single document
-ragdoll add <path>
-
 # List all documents
 ragdoll list
 
@@ -155,6 +188,10 @@ ragdoll list --format plain
 # Check document status
 ragdoll status <id>
 
+# Show detailed document information
+ragdoll show <id>
+ragdoll show <id> --format json
+
 # Update document metadata
 ragdoll update <id> --title "New Title"
 
@@ -164,8 +201,6 @@ ragdoll delete <id> --force  # Bypass confirmation
 
 # Show system statistics
 ragdoll stats
-ragdoll stats --format json
-ragdoll stats --format plain
 ```
 
 ### Retrieval Utilities
