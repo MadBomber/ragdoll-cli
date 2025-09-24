@@ -1,6 +1,16 @@
 # Ragdoll CLI Search Modes
 
-The ragdoll-cli now supports three distinct search modes to query your document collection:
+The ragdoll-cli supports three distinct search modes to query your unified text-based document collection. All media types (images, audio, documents) are converted to searchable text, enabling powerful cross-modal search through a single interface.
+
+## Unified Text-Based Architecture
+
+Ragdoll converts all document types to text before indexing:
+- **Images**: AI-generated descriptions using vision models
+- **Audio**: Speech-to-text transcripts
+- **PDFs/DOCX**: Text extraction
+- **CSV/JSON**: Structured data as readable text
+
+This means you can search for images by describing their content, find audio by spoken topics, and discover any document type through natural language queries.
 
 ## 1. Semantic Search (Default)
 
@@ -72,9 +82,9 @@ ragdoll search "tensorflow keras" --search-type hybrid --semantic-weight 0.3 --t
 - `--text-weight, -W NUMBER`: Weight for text search in hybrid mode (0.0-1.0, default: 0.3)
 
 ### Filtering Options
-- `--content-type, -c TYPE`: Filter by content type (text, image, audio)
 - `--classification, -C CLASS`: Filter by document classification
 - `--tags, -T TAGS`: Filter by tags (comma-separated)
+- `--content-type, -c TYPE`: DEPRECATED - All media types are converted to searchable text
 
 ## Examples
 

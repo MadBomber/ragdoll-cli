@@ -42,7 +42,7 @@ module Ragdoll
       method_option :threshold, type: :numeric,
                                desc: 'Similarity threshold (0.0-1.0, lower = more results)'
       method_option :content_type, type: :string, aliases: '-c',
-                                   desc: 'Filter by content type (text, image, audio)'
+                                   desc: 'DEPRECATED: Content type filtering (unified text-based system converts all media to text)'
       method_option :classification, type: :string, aliases: '-C',
                                      desc: 'Filter by classification'
       method_option :keywords, type: :string, aliases: '-k',

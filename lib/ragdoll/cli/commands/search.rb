@@ -10,6 +10,11 @@ module Ragdoll
 
         puts "Searching for: #{query}"
         puts "Search type: #{options[:search_type] || 'semantic'}"
+
+        # Show deprecation warning for content_type
+        if options[:content_type]
+          puts "⚠️  DEPRECATED: --content_type option is deprecated. Unified text-based system converts all media to searchable text."
+        end
         
         # Show hybrid search weights if applicable
         if options[:search_type] == 'hybrid'

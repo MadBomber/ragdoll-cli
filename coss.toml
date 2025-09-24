@@ -6,12 +6,12 @@
 # 1. Basic Project Information
 name = "ragdoll-cli"
 version = "0.1.11"
-description = "Console interface for Multi-modal Retrieval Augmented Generation (RAG)"
+description = "Console interface for Unified Text-Based RAG with Cross-Modal Search"
 licenses = ["MIT"]
 ai_contributions = true  # AI was used to enhance testing framework
 coss_compliant = true
 homepage = "https://github.com/MadBomber/ragdoll-cli"
-keywords = ["ruby", "cli", "ragdoll", "rag", "multi-modal", "ai"]
+keywords = ["ruby", "cli", "ragdoll", "rag", "unified-text", "cross-modal", "ai"]
 
 ##########################################################
 # 2. Repository and Issue Tracking

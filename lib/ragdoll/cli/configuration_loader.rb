@@ -22,7 +22,9 @@ module Ragdoll
 
         default_config = {
           'llm_provider' => 'openai',
-          'embedding_model' => 'text-embedding-3-small',
+          'embedding_model' => 'text-embedding-3-large',
+          'embedding_provider' => 'openai',
+          'use_unified_content' => true,
           'chunk_size' => 1000,
           'chunk_overlap' => 200,
           'search_similarity_threshold' => 0.7,
@@ -72,7 +74,13 @@ module Ragdoll
             ragdoll_config.llm_provider = config['llm_provider']&.to_sym || :openai
           end
           if ragdoll_config.respond_to?(:embedding_model=)
-            ragdoll_config.embedding_model = config['embedding_model'] || 'text-embedding-3-small'
+            ragdoll_config.embedding_model = config['embedding_model'] || 'text-embedding-3-large'
+          end
+          if ragdoll_config.respond_to?(:embedding_provider=)
+            ragdoll_config.embedding_provider = config['embedding_provider']&.to_sym || :openai
+          end
+          if ragdoll_config.respond_to?(:use_unified_content=)
+            ragdoll_config.use_unified_content = config['use_unified_content'] != false
           end
 
           # Processing settings

@@ -1,7 +1,7 @@
-<div align="center" style="background-color: yellow; color: black; padding: 20px; margin: 20px 0; border: 2px solid black; font-size: 48px; font-weight: bold;">
-  ⚠️ CAUTION ⚠️<br />
-  Software Under Development by a Crazy Man
-</div>
+> [!CAUTION]
+> **Software Under Development by a Crazy Man**
+>
+> Evolved from multi-modal to unified text-based RAG architecture.
 <br />
 <div align="center">
   <table>
@@ -12,7 +12,7 @@
         </a>
       </td>
       <td width="50%" valign="top">
-        <p>Multi-modal RAG (Retrieval-Augmented Generation) is an architecture that integrates multiple data types (such as text, images, and audio) to enhance AI response generation. It combines retrieval-based methods, which fetch relevant information from a knowledge base, with generative large language models (LLMs) that create coherent and contextually appropriate outputs. This approach allows for more comprehensive and engaging user interactions, such as chatbots that respond with both text and images or educational tools that incorporate visual aids into learning materials. By leveraging various modalities, multi-modal RAG systems improve context understanding and user experience.</p>
+        <p>Unified Text-Based RAG converts all media types—images, audio, documents—into comprehensive text representations before vectorization. This approach enables powerful cross-modal search where you can find images through AI-generated descriptions, audio through transcripts, and all content through a single, unified text-based search index. The system combines intelligent text conversion with retrieval-based methods and generative large language models for enhanced AI response generation.</p>
       </td>
     </tr>
   </table>
@@ -20,7 +20,7 @@
 
 # Ragdoll::CLI
 
-Standalone command-line interface for the Ragdoll RAG (Retrieval-Augmented Generation) system. Provides document import, search, and management capabilities through a simple CLI.
+Standalone command-line interface for the Ragdoll unified text-based RAG system. Converts all media types to searchable text and provides powerful cross-modal search capabilities through a simple CLI.
 
 ## Installation
 

@@ -51,12 +51,15 @@ setup_sample_docs() {
     cat >sample_docs/getting_started.md <<'EOF'
 # Getting Started with Ragdoll
 
-Ragdoll is a powerful document search and retrieval system that uses semantic search
-to find relevant information across your document collection.
+Ragdoll is a unified text-based RAG system that converts all media types to searchable text.
+Images become AI-generated descriptions, audio becomes transcripts, and documents are
+extracted as text for powerful cross-modal search capabilities.
 
 ## Features
-- Semantic search using embeddings
-- Support for multiple document formats
+- Unified text-based search across all media types
+- Cross-modal search (find images by describing content)
+- AI-powered text conversion (vision models, speech-to-text)
+- Support for multiple document formats (PDF, DOCX, CSV, JSON, images, audio)
 - Advanced analytics and tracking
 - RESTful API and CLI interface
 EOF
@@ -170,8 +173,8 @@ run_command "Basic semantic search" \
 run_command "Search with result limit" \
     "ragdoll search 'API documentation' --limit 3"
 
-run_command "Search with content type filter" \
-    "ragdoll search 'user guide' --content_type text"
+run_command "Search with classification filter" \
+    "ragdoll search 'user guide' --classification documentation"
 
 run_command "Search with keyword filtering" \
     "ragdoll search 'search tips' --keywords 'guide,tips,help'"
