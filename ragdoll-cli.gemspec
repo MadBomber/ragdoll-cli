@@ -14,7 +14,7 @@ Gem::Specification.new do |spec|
   spec.description = "Command-line interface for Ragdoll's unified text-based RAG system. Converts all media types (images, audio, documents) to searchable text for powerful cross-modal search capabilities. Under development. Contributors welcome."
   spec.homepage    = "https://github.com/MadBomber/ragdoll-cli"
   spec.license     = "MIT"
-  spec.required_ruby_version = ">= 3.2.0"
+  spec.required_ruby_version = ">= 4.0"
 
   spec.metadata["allowed_push_host"] = "https://rubygems.org"
 
